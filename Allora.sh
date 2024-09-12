@@ -227,26 +227,29 @@ function execute_work_task_1() {
         cd basic-coin-prediction-node || { echo "无法进入 basic-coin-prediction-node 目录"; exit 1; }
     fi
 
-    # 删除旧的配置文件并提示用户创建新的配置文件
-    rm -f config.json
-    echo "请提供 addressRestoreMnemonic 和 Polkachu RPC 信息。"
-    echo "请在下面的配置文件中填写这些信息："
-    echo "{"
-    echo "  \"addressRestoreMnemonic\": \"你的地址恢复助记词\","
-    echo "  \"Polkachu RPC\": \"你的Polkachu RPC地址\""
-    echo "}"
-    echo "请创建新的配置文件 config.json:"
-    nano config.json
-
-    # 确保用户已经编辑并保存 config.json
+    # 如果 config.json 不存在，提示用户创建
     if [ ! -f config.json ]; then
-        echo "配置文件 config.json 未找到，退出..."
-        exit 1
-    fi
+        echo "请提供 addressRestoreMnemonic 和 Polkachu RPC 信息。"
+        echo "请在下面的配置文件中填写这些信息："
+        echo "{"
+        echo "  \"addressRestoreMnemonic\": \"你的地址恢复助记词\","
+        echo "  \"Polkachu RPC\": \"你的Polkachu RPC地址\""
+        echo "}"
+        echo "请创建新的配置文件 config.json:"
+        nano config.json
 
-    # 提示用户按任意键继续
-    read -p "编辑完成后，请按任意键继续执行下一步..." -n1 -s
-    echo
+        # 确保用户已经编辑并保存 config.json
+        if [ ! -f config.json ]; then
+            echo "配置文件 config.json 未找到，退出..."
+            exit 1
+        fi
+
+        # 提示用户按任意键继续
+        read -p "编辑完成后，请按任意键继续执行下一步..." -n1 -s
+        echo
+    else
+        echo "config.json 已经存在，跳过配置文件创建步骤"
+    fi
 
     # 创建目录、设置权限，并执行 init.config
     mkdir -p worker-data
