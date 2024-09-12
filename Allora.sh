@@ -218,8 +218,14 @@ function execute_work_task_1() {
 
     # 克隆 basic-coin-prediction-node 仓库并进入目录
     cd $HOME || { echo "无法进入 $HOME 目录"; exit 1; }
-    git clone https://github.com/allora-network/basic-coin-prediction-node || { echo "克隆仓库失败"; exit 1; }
-    cd basic-coin-prediction-node || { echo "无法进入 basic-coin-prediction-node 目录"; exit 1; }
+    
+    if [ -d "basic-coin-prediction-node" ]; then
+        echo "basic-coin-prediction-node 已经存在，进入该目录"
+        cd basic-coin-prediction-node || { echo "无法进入 basic-coin-prediction-node 目录"; exit 1; }
+    else
+        git clone https://github.com/allora-network/basic-coin-prediction-node || { echo "克隆仓库失败"; exit 1; }
+        cd basic-coin-prediction-node || { echo "无法进入 basic-coin-prediction-node 目录"; exit 1; }
+    fi
 
     # 删除旧的配置文件并提示用户创建新的配置文件
     rm -f config.json
@@ -231,6 +237,12 @@ function execute_work_task_1() {
     echo "}"
     echo "请创建新的配置文件 config.json:"
     nano config.json
+
+    # 确保用户已经编辑并保存 config.json
+    if [ ! -f config.json ]; then
+        echo "配置文件 config.json 未找到，退出..."
+        exit 1
+    fi
 
     # 提示用户按任意键继续
     read -p "编辑完成后，请按任意键继续执行下一步..." -n1 -s
@@ -245,10 +257,21 @@ function execute_work_task_1() {
     echo "正在构建并启动 Docker 容器..."
     docker compose up --build -d || { echo "启动 Docker 容器失败"; exit 1; }
 
+    # 检查容器是否运行成功
+    docker ps | grep "basic-coin-prediction-node" > /dev/null
+    if [ $? -eq 0 ]; then
+        echo "Docker 容器启动成功"
+    else
+        echo "Docker 容器未能启动，请检查日志"
+        docker-compose logs
+        exit 1
+    fi
+
     # 提示用户按任意键返回主菜单
     read -p "Docker 容器启动完成，请按任意键返回主菜单..." -n1 -s
     echo
 }
+
 
 # 查看工人日志的函数
 function view_worker_logs() {
@@ -285,7 +308,7 @@ function view_worker_logs() {
 function main_menu() {
     while true; do
         clear
-        echo "脚本由推特 @ferdie_jhovie，免费开源，请勿相信收费"
+        echo "脚本由推特 @ferdie_jhovie，免费开源，请勿相信收费"    修改版
         echo "================================================================"
         echo "节点社区 Telegram 群组: https://t.me/niuwuriji"
         echo "节点社区 Telegram 频道: https://t.me/niuwuriji"
